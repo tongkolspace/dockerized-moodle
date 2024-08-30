@@ -40,8 +40,9 @@ php admin/cli/reset_password.php -u username -p password
 ## Langkah menjalankan dev/prod
 
 1. copy env, menggunakan command `bash wrapper.sh copy_env .env-dev-tongkolspace-sample .env-tongkolspace`
-1. copy env, menggunakan command `bash wrapper.sh copy_env .env-dev-proxy-sample .env-prxoy-sample`
-2. Jalankan `bash wrapper.sh dev-local dev-tongkolspace up dev-proxy`
+2. copy env, menggunakan command `bash wrapper.sh copy_env .env-dev-proxy-sample .env-prxoy-sample`
+3. Jalankan `bash symlink.sh`
+4. Jalankan `bash wrapper.sh dev-local dev-tongkolspace up dev-proxy`
 
 URL 
 - https://moodle.local:57710/
