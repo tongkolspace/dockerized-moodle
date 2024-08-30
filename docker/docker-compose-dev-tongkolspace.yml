@@ -1,0 +1,61 @@
+services:
+  supervisor:
+    env_file:
+      - .env-dev-tongkolspace
+    environment:
+      TZ: "${TZ}"
+    networks:
+      - internal
+      - external
+  nginx:
+    depends_on:
+      - php-fpm
+      - redis
+    networks:
+      - internal
+      - external
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.moodle-${APP_NAME}.tls=true"
+      - "traefik.http.routers.moodle-${APP_NAME}.tls.certresolver=${CERT_RESOLVER}"
+      - "traefik.http.routers.moodle-${APP_NAME}.rule=Host(`${DOMAIN_MOODLE}`)"
+      - "traefik.http.routers.moodle-${APP_NAME}.entrypoints=web,websecure"
+      - "traefik.http.routers.moodle-${APP_NAME}.service=moodle-${APP_NAME}"
+      - "traefik.http.services.moodle-${APP_NAME}.loadbalancer.server.port=80"
+      - "traefik.http.routers.moodle-admin-${APP_NAME}.tls=true"
+      - "traefik.http.routers.moodle-admin-${APP_NAME}.tls.certresolver=${CERT_RESOLVER}"
+      - "traefik.http.routers.moodle-admin-${APP_NAME}.rule=Host(`${DOMAIN_MOODLE}`)"
+      - "traefik.http.routers.moodle-admin-${APP_NAME}.entrypoints=admin"
+      - "traefik.http.routers.moodle-admin-${APP_NAME}.service=moodle-admin-${APP_NAME}"
+      - "traefik.http.services.moodle-admin-${APP_NAME}.loadbalancer.server.port=57710"
+      - "traefik.docker.network=${NETWORK}"
+    ports: !reset []
+  redis:
+    volumes:
+      - ./redis/redis-prod.conf:/usr/local/etc/redis/redis.conf
+    command: redis-server /usr/local/etc/redis/redis.conf
+    networks:
+      - internal
+  db:
+    volumes:
+      - ./mysql/config/mysql-prod.cnf:/etc/my.cnf
+      - ./mysql/datadir:/var/lib/mysql
+    networks:
+      - internal
+      - external
+  workspace-moodle:
+    env_file:
+      - .env-dev-tongkolspace
+    ports: !reset []
+    networks:
+      - internal
+      - external
+  php-fpm:
+      env_file:
+      - .env-dev-tongkolspace
+networks:
+  internal:
+    name: ${APP_NAME}-${NETWORK}
+  external:
+    external: true
+    name: ${NETWORK}
