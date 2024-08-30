@@ -76,3 +76,67 @@ Config.php dibuat dinamis agar dapat meload tergantung kondisi.
 Template terlepak pada file `moodle_mod/config-template.php`
 Copy dan modidifikasi file sesuai kebutuhan
 Untuk file `config-standard.php` digunakan untuk deployment tanpa docker, file ini masuk git ignore karena pada env tanpa docker secret tertulis pada config file
+
+
+# Upgrade Moodle
+
+Tahapan upgrade Moodle
+- Database
+- Upgrade code moodle dan plugin umum
+- Upgrade Schema Database
+- Upgrade code custom
+
+## Database
+
+- Siapkan database sesuai [kebutuhan moodle](https://moodledev.io/general/releases/4.4)
+- Jika perlu database baru, maka data dari database lama perlu dipindah ke database baru tanpa `mld_session`
+
+## Upgrade code moodle dan plugin umum
+
+Tujuan akhir dari langkah ini adalah melakukan instalasi moodle core dan plugin umum yang tersedia dari https://moodle.org/plugins/
+
+- Siapkan server sesuai dengan spesifikasi
+- clone project dari repository
+- mount folder `moodledata` 
+- download moodle pada folder `moodle`
+    - dapat menggunakan command `init.sh dev-local install`
+- setup config
+    - ubah `symlink.sh` sehingga hanya melakukan symlink file-file config
+- Jalankan maintenance mode
+    - `bash wrapper.sh run --rm workspace-moodle bash`
+    - `php admin/cli/maintenance.php --enable`
+- Masuk ke halaman moodle `http://moodle.local/admin/index.php?cache=0&confirmrelease=1&confirmplugincheck=0`
+- Akan tampil [halaman upgrade plugin](https://storage.tongkolspace.com/tonjoo/ukttebs.jpeg)
+- Install plugin umum secara dengan cara klik satu persatu "install this update"
+
+Setelah tahap ini selesai semua plugin umum seharusnya sudah sesuai dengan versi moodle
+
+## Upgrade Schema Database
+
+- Tahap ini cukup riskan, sebaiknya ada backup database
+- Upgrade database dari cli `php admin/cli/upgrade_database.php`
+- Tunggu sampai proses selesai
+
+Proses ini jika berhasil maka akan mengupdate database schema moodle ke versi terbaru.
+Pada tahap ini moodle sudah dapat diakses tetapi tanpa code custom
+
+## Upgrade code custom
+
+- Ubah `symlink.sh`, tambahkan semua mod dan theme custom
+- ekseskusi `symlink.sh`
+- disable maintenance `php admin/cli/maintenance.php --disable`
+- Akses moodle dari web
+- Perbaiki error yang terjadi pada custom code, untuk tahap awal paling mudah adalah merubah versi kompabilitasnya pada version.php 
+
+```
+defined('MOODLE_INTERNAL') || die();
+
+$plugin->component = 'local_restrictrestore';  // To check on upgrade, that module sits in correct place.
+$plugin->version   = 20240801400;        // The current module version (Date: YYYYMMDDXX).
+$plugin->requires  = 2015111600;        // Requires Moodle version 3.0.
+$plugin->release   = '1.0.0';
+$plugin->maturity  = MATURITY_STABLE;
+$plugin->cron      = 0;
+```
+
+- Setelah semua plugin dapat diload, proses upgrade code secara manual dapat dilakukan

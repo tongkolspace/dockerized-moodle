@@ -168,10 +168,10 @@ then
     sudo rm -rf "$script_dir/docker/mysql/datadir/" 
 else 
     echo "penggunaan"
-    echo "bash init.sh install"
-    echo "bash init.sh install_moodle"
-    echo "bash init.sh clean"
-    echo "bash init.sh setup_htaccess"
-    echo "bash init.sh setup_fake_https_cert"
+    echo "bash init.sh dev-local install"
+    echo "bash init.sh dev-local install_moodle"
+    echo "bash init.sh dev-local clean"
+    echo "bash init.sh dev-local setup_htaccess"
+    echo "bash init.sh dev-local setup_fake_https_cert"
 
 fi
