@@ -114,6 +114,12 @@ Setelah tahap ini selesai semua plugin umum seharusnya sudah sesuai dengan versi
 
 ## Upgrade Schema Database
 
+Ketika semua plugin sudah diupdate, langkah selanjutnya adalah "Upgrade Moodle Database"
+
+![img](https://storage.tongkolspace.com/tonjoo/0tdn7v2.png)
+
+Jangan klik tombol ini ! Gunakan admin cli untuk melakukan upgrade
+
 - Tahap ini cukup riskan, sebaiknya ada backup database
 - Upgrade database dari cli `php admin/cli/upgrade_database.php`
 - Tunggu sampai proses selesai
