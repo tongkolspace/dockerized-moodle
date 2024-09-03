@@ -1,4 +1,5 @@
 ## Langkah menjalankan dev
+1. copy `.env` file `bash wrapper.sh copy_env .env-dev-local-sample .env-dev-local`
 1. Jalankan command `bash init.sh dev-local install` untuk mendownload moodle
 2. Gunakan folder moodle_mod untuk mounting semua plugin dan theme ke folder moodle
 3. Ubah folder yang akan dimounting dari moodle_mod ke moodle pada script symlink.sh
@@ -12,15 +13,14 @@ targets=(
 ``` 
 4. Jalankan symlink.sh
 ```
-symlink.sh --dry-run
-symlink.sh --force
+bash symlink.sh --dry-run
+bash symlink.sh --force
 ```
  
 5. `config.php` akan menggunakan hasil symlink dari `moodle_mod`
-6. copy env, menggunakna command `bash wrapper.sh copy_env .env-dev-local-sample .env-dev-local`
 7. Set local dns `127.0.0.1 moodle.local`
 8. Jalankan docker compose dengan perintah `bash wrapper.sh dev-local up`
-9. Jalankan command `bash init.sh install_moodle` untuk install dari climoodle
+9. Jalankan command `bash init.sh dev-local install_moodle` untuk install dari climoodle
 10. Input dns local `127.0.0.1 moodle.local` buka browser dan ketik `http://moodle.local`
 
 # Catatan Moodle
@@ -80,6 +80,8 @@ Untuk file `config-standard.php` digunakan untuk deployment tanpa docker, file i
 
 # Upgrade Moodle
 
+Upgrade moodle umum
+
 Tahapan upgrade Moodle
 - Database
 - Upgrade code moodle dan plugin umum
@@ -99,7 +101,7 @@ Tujuan akhir dari langkah ini adalah melakukan instalasi moodle core dan plugin 
 - clone project dari repository
 - mount folder `moodledata` 
 - download moodle pada folder `moodle`
-    - dapat menggunakan command `init.sh dev-local install`
+    - dapat menggunakan command `init.sh dev-local install` sesuaikan env `VERSION_MOODLE=4.1.11` sesuai kebutuhan
 - setup config
     - ubah `symlink.sh` sehingga hanya melakukan symlink file-file config
 - Jalankan maintenance mode

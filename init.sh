@@ -22,6 +22,7 @@ check_folder() {
   fi
 }
 
+
 setup_htaccess() {
     htpasswd -bc "$script_dir/docker/nginx/.htpasswd" "$ADMIN_PANEL_USERNAME" "$ADMIN_PANEL_PASSWORD"
 
@@ -120,13 +121,65 @@ base_recipe_url=${BASE_RECIPE_URL:-https://raw.githubusercontent.com/tongkolspac
 if  [ "$1" == "install_moodle" ]
 then
     install_moodle
+elif [ "$1" == "upgrade_moodle" ]
+then
+    tmp_dir="$script_dir/tmp"
+
+    if [ ! -d "$script_dir/tmp" ]; then
+        mkdir "$script_dir/tmp"
+    fi
+
+    # Prompt for confirmation
+    read -p "Are you sure you want to upgrade? This will delete all files on $script_dir/moodle folder (y/n): " confirm
+
+    # Check confirmation
+    if [[ $confirm != [yY] ]]; then
+        echo "Upgrade cancelled."
+        exit 1
+    fi
+
+    # Remove existing moodle directory if it exists
+    if [ ! -d "$script_dir/moodle" ]; then
+        echo "Previous moodle instalation not found"
+    fi
+
+    echo "Removing delete all files on moodle folder"
+    rm "$script_dir/moodle"/* -rf 
+
+
+    # # Download the Moodle zip file to the temporary directory
+    echo "Downloading Moodle version $VERSION_MOODLE_UPGRADE..."
+    wget "https://github.com/moodle/moodle/archive/refs/tags/v$VERSION_MOODLE_UPGRADE.zip" -O "$tmp_dir/moodle-docker.zip"
+
+    # # Unzip directly to the script directory
+    echo "Extracting zip file..."
+    unzip "$tmp_dir/moodle-docker.zip" -d "$tmp_dir"
+
+    # Rename the extracted directory to 'moodle'
+    echo "Moving extracted folder..."
+    mv "$tmp_dir/moodle-$VERSION_MOODLE_UPGRADE/"* "$script_dir/moodle/"
+
+    # Set ownership
+    echo "Setting folder ownership..."
+    sudo chown 1000:33 "$script_dir/moodle" -R
+
+    # Remove the temporary zip file
+    echo "Cleaning up temporary files..."
+    rm "$tmp_dir"  -rf
+
+    echo "Upgrade complete.."
+    echo "Run symlink.sh to symlink custom file and config"
+
 elif [ "$1" == "install" ]
 then
     check_folder "$script_dir/moodle";
     check_folder "$script_dir/moodledata";
 
-    # Use the standard /tmp directory
-    tmp_dir="/tmp"
+    tmp_dir="$script_dir/tmp"
+
+    if [ ! -d "$script_dir/tmp" ]; then
+        mkdir "$script_dir/tmp"
+    fi
 
     # Download the Moodle zip file to the temporary directory
     wget "https://github.com/moodle/moodle/archive/refs/tags/v$VERSION_MOODLE.zip" -O "$tmp_dir/moodle-docker.zip"
@@ -142,7 +195,7 @@ then
     sudo chown 1000:33 "$script_dir/moodle" -R
 
     # Remove the temporary zip file
-    rm "$tmp_dir/moodle-docker.zip"
+    rm "$tmp_dir -rf"
 
     mkdir moodledata && sudo chown 33:33 -R moodledata && sudo chmod 770 moodledata -R
 
@@ -169,6 +222,7 @@ then
 else 
     echo "penggunaan"
     echo "bash init.sh dev-local install"
+    echo "bash init.sh dev-local upgrade_moodle"
     echo "bash init.sh dev-local install_moodle"
     echo "bash init.sh dev-local clean"
     echo "bash init.sh dev-local setup_htaccess"

@@ -1,11 +1,7 @@
-x-common-mod_moove: &mod_moove ../moodle_mod/theme/moove:/var/www/html/theme/moove
-x-common-mod_restrict_restore: &mod_restrict_restore ../moodle_mod/local/restrictrestore:/var/www/html/local/restrictrestore
-x-common-mod_delete_backup: &mod_delete_backup ../moodle_mod/admin/cli/delete_backup.php:/var/www/html/admin/cli/delete_backup.php
-
 services:
   php-fpm:
     # sesuaikan php ini
-    image: tongkolspace/belmawa-php-fpm-moodle:${IMAGE_MOODLE_VERSION}
+    image: tongkolspace/php-fpm-moodle:${IMAGE_MOODLE_VERSION}
     container_name: php-fpm-moodle-${APP_NAME}
     restart: unless-stopped
     build:
@@ -47,10 +43,6 @@ services:
       - ./nginx/conf.d/cloudflare.conf:/etc/nginx/conf.d/cloudflare.conf
       - ./nginx/.htpasswd:/etc/nginx/.htpasswd
       - ./nginx/tmp/nginx:/tmp/nginx
-      # Modifikasi Moodle
-      # - *mod_moove
-      # - *mod_restrict_restore
-      # - *mod_delete_backup
     depends_on:
       - redis
     networks:
@@ -73,7 +65,7 @@ services:
     networks:
       - internal
   workspace-moodle:
-    image: tongkolspace/belmawa-php-fpm-moodle:${IMAGE_MOODLE_VERSION}
+    image: tongkolspace/workspace-moodle:${IMAGE_MOODLE_VERSION}
     container_name: workspace-moodle-${APP_NAME}
     build:
       context: ../
@@ -92,12 +84,12 @@ services:
     networks:
       - internal
       - external
-    ports:
+    # ports:
       # Bakend Laravel
-      - 8000:8000
-      - 5173:5173
+      # - 8000:8000
+      # - 5173:5173
   supervisor:
-    image: tongkolspace/belmawa-supervisor-moodle:${IMAGE_MOODLE_VERSION}
+    image: tongkolspace/supervisor-moodle:${IMAGE_MOODLE_VERSION}
     container_name: supervisor-moodle-${APP_NAME}
     build:
       context: ../

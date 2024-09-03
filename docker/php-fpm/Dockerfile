@@ -33,8 +33,9 @@ RUN set -ex; \
     && apt-get clean 
 
 # Custom Moodle
-COPY ./moodle /var/www/html
-COPY ./moodle_mod /var/www/html
+# COPY ./moodle_mod /var/www/html
+# COPY ./moodle_mod /var/www/moodle_mod
+
 RUN chmod -R a-w /var/www/html
 
 USER  www-data

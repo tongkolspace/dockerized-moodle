@@ -13,7 +13,7 @@ targets=(
     "local/restrictrestore"
     "config.php"
     "config-docker.php"
-    "config-standar.php"
+    "config-standard.php"
 )
 
 # Fungsi untuk menjalankan atau hanya menampilkan perintah
