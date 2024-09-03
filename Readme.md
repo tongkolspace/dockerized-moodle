@@ -80,9 +80,8 @@ Untuk file `config-standard.php` digunakan untuk deployment tanpa docker, file i
 
 # Upgrade Moodle
 
-Upgrade moodle umum
+Tahapan upgrade Moodle umum
 
-Tahapan upgrade Moodle
 - Database
 - Upgrade code moodle dan plugin umum
 - Upgrade Schema Database
@@ -142,3 +141,31 @@ $plugin->cron      = 0;
 ```
 
 - Setelah semua plugin dapat diload, proses upgrade code secara manual dapat dilakukan
+
+# Upgrade Moodle dengan script `init.sh upgrade_moodle`
+
+Untuk mempercepat proses upgrade kita dapat menggunakan script init.sh `init.sh upgrade_moodle`
+
+Cara kerja
+
+- Pastikan moodle sudah berjalan lancar
+- Folder moodle_mod sudah disetup dengan benar menggunakan script symlink.sh
+- Setup env `VERSION_MOODLE_UPGRADE` sesuai target versi moodle
+
+Jalankan script dengan cara : 
+
+```
+bash init.sh upgrade_moodle
+```
+
+Script ini akan melakukan
+- download moodle dengan versi sesuai `VERSION_MOODLE_UPGRADE`
+- mengosongkan isi folder `moodle` dan mengganti dengan moodle hasil download
+
+Kemudian jalankan symlink dengan cara
+
+```
+bash symlink.sh
+```
+
+Jika langkah diatas berhasil masuk ke url moodle `http://moodle.local` untuk melakukan upgrade plugin dan database, ikuti petunjuk bagian `upgrade moodle` yang lebih jelas
