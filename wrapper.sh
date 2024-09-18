@@ -16,10 +16,12 @@ function help_wrapper {
 function load_env {
     # Source the .env file
     if [ -f $1 ]; then
-        echo "source $1"
-        export $(grep -v '^#' $1 | xargs)
-    else
-        echo "No .env file found in $1"
+        # Menggunakan 'set -a' untuk mengekspor semua variabel yang dibaca
+        set -a
+        # Membaca file tanpa menjalankan isinya
+        source "$1" >/dev/null 2>&1
+        set +a
+        echo "load_env : $1"
     fi
 }
 
@@ -91,8 +93,8 @@ shift_count=0
 # Set Env for docker compose
 # Check if the first argument matches the pattern
 if [[ ! $1 =~ $docker_compose_pattern ]]; then
-    load_env "$script_dir/docker/.env"
-    compose_file="-f docker-compose.yml"
+    load_env "$script_dir/docker/.env-dev-local"
+    compose_file="-f docker-compose-dev-local.yml"
     # compose_env="--env-file=.env"
 else
     for params in "$@"; do
@@ -200,6 +202,8 @@ elif [[ $2 =~ ^(workspace|node)-.*$ ]] && [[ $1 =~ ^(exec|run)$ ]]; then
 
     cd $current_dir
 else 
+
     cd "$script_dir/docker"
     docker compose $compose_command "$@"
+    cd $current_dir
 fi

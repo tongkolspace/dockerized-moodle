@@ -1,0 +1,34 @@
+services:
+  wordpress: !reset 
+  wordpress-container:
+    image: app-moodle-${APP_NAME}:${APP_TAG} 
+    container_name: moodle-dev-container-${APP_NAME}
+    environment:
+      - ROLE_BACKGROUND=true
+      - ROLE_NGINX=true
+      - ROLE_PHP_FPM=true
+    env_file:
+      - .env-dev-local
+    networks:
+      - internal
+      - external
+    volumes: !override
+      # Moodle
+      - ../moodledata:/var/www/moodledata
+      - ./app/nginx/sites-available/admin.conf:/etc/nginx/sites-enabled/admin.conf
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.wordpress-${APP_NAME}.tls=true"
+      - "traefik.http.routers.wordpress-${APP_NAME}.tls.certresolver=${CERT_RESOLVER}"
+      - "traefik.http.routers.wordpress-${APP_NAME}.rule=Host(`${DOMAIN_MOODLE}`)"
+      - "traefik.http.routers.wordpress-${APP_NAME}.entrypoints=web,websecure"
+      - "traefik.http.routers.wordpress-${APP_NAME}.service=wordpress-${APP_NAME}"
+      - "traefik.http.services.wordpress-${APP_NAME}.loadbalancer.server.port=8000"
+      - "traefik.http.routers.wordpress-admin-${APP_NAME}.tls=true"
+      - "traefik.http.routers.wordpress-admin-${APP_NAME}.tls.certresolver=${CERT_RESOLVER}"
+      - "traefik.http.routers.wordpress-admin-${APP_NAME}.rule=Host(`${DOMAIN_MOODLE}`)"
+      - "traefik.http.routers.wordpress-admin-${APP_NAME}.entrypoints=admin"
+      - "traefik.http.routers.wordpress-admin-${APP_NAME}.service=wordpress-admin-${APP_NAME}"
+      - "traefik.http.services.wordpress-admin-${APP_NAME}.loadbalancer.server.port=57710"
+      - "traefik.docker.network=${NETWORK}"
+

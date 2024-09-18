@@ -52,24 +52,13 @@ setup_network() {
 }
 
 install_moodle() {
-    # Set variables (adjust these according to your setup)
-    # MOODLE_PATH="/var/www/html"
-    # MOODLE_DATA="/var/www/moodledata"
-    # MOODLE_URL="http://$DOMAIN_MOODLE"
-    # ADMIN_USER="admin"
-    # ADMIN_PASS="admin_password"
-    # ADMIN_EMAIL="admin@example.com"
 
-    # Navigate to Moodle directory
-    # cd $MOODLE_PATH
 
     # Run the installation command
-    # bash wrapper.sh $selected_env run --rm \
-    #     -v ./moodle:/var/www/html \
-    #     -v ./moodledata:/var/www/moodledata \
-    #     workspace-moodle \
+    # bash wrapper.sh $selected_env exec \
+    #     moodle \
     #     php admin/cli/install.php \
-    #     --wwwroot="$MOODLE_URL" \
+    #     --wwwroot="/var/www/html" \
     #     --dataroot="/var/www/moodledata" \
     #     --dbtype="$DB_TYPE" \
     #     --dbhost="$DB_HOST" \
@@ -84,10 +73,8 @@ install_moodle() {
     #     --non-interactive \
     #     --agree-license
 
-    bash wrapper.sh $selected_env run --rm \
-        -v ./moodle:/var/www/html \
-        -v ./moodledata:/var/www/moodledata \
-        workspace-moodle \
+    bash wrapper.sh $selected_env exec \
+        moodle \
         php admin/cli/install_database.php \
         --fullname="Moodle Site" \
         --shortname="Moodle" \
@@ -197,9 +184,8 @@ then
     # Remove the temporary zip file
     rm "$tmp_dir -rf"
 
-    mkdir moodledata && sudo chown 33:33 -R moodledata && sudo chmod 770 moodledata -R
+    mkdir moodledata && sudo chown 1000:1000 -R moodledata && sudo chmod 770 moodledata -R
 
-    setup_htaccess
     setup_fake_https_cert
     setup_network
 

@@ -1,19 +1,17 @@
 services:
-  supervisor:
-    env_file:
-      - .env-dev-tongkolspace
-    environment:
-      TZ: "${TZ}"
-    networks:
-      - internal
-      - external
-  nginx:
-    depends_on:
-      - php-fpm
-      - redis
-    networks:
-      - internal
-      - external
+  moodle:
+    image: app-moodle-${APP_NAME}:${APP_TAG} 
+    container_name: moodle-dev-tongkolspace-${APP_NAME}
+    ports: !reset 
+    volumes: !override
+      # Moodle
+      - ../moodle:/var/www/html
+      - ../moodle_mod:/var/www/moodle_mod
+      - ../moodledata:/var/www/moodledata
+      - ./app/nginx/sites-available/admin.conf:/etc/nginx/sites-enabled/admin.conf
+      # PHP 
+      - ./app/php-fpm/php-fpm-prod.conf:/etc/php82/php-fpm.d/www.conf
+      - ./app/php-fpm/php-prod.ini:/etc/php82/conf.d/custom.ini
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.moodle-${APP_NAME}.tls=true"
@@ -21,7 +19,7 @@ services:
       - "traefik.http.routers.moodle-${APP_NAME}.rule=Host(`${DOMAIN_MOODLE}`)"
       - "traefik.http.routers.moodle-${APP_NAME}.entrypoints=web,websecure"
       - "traefik.http.routers.moodle-${APP_NAME}.service=moodle-${APP_NAME}"
-      - "traefik.http.services.moodle-${APP_NAME}.loadbalancer.server.port=80"
+      - "traefik.http.services.moodle-${APP_NAME}.loadbalancer.server.port=8000"
       - "traefik.http.routers.moodle-admin-${APP_NAME}.tls=true"
       - "traefik.http.routers.moodle-admin-${APP_NAME}.tls.certresolver=${CERT_RESOLVER}"
       - "traefik.http.routers.moodle-admin-${APP_NAME}.rule=Host(`${DOMAIN_MOODLE}`)"
@@ -29,33 +27,15 @@ services:
       - "traefik.http.routers.moodle-admin-${APP_NAME}.service=moodle-admin-${APP_NAME}"
       - "traefik.http.services.moodle-admin-${APP_NAME}.loadbalancer.server.port=57710"
       - "traefik.docker.network=${NETWORK}"
-    ports: !reset []
-  redis:
-    volumes:
-      - ./redis/redis-prod.conf:/usr/local/etc/redis/redis.conf
-    command: redis-server /usr/local/etc/redis/redis.conf
-    networks:
-      - internal
-  db:
-    volumes:
-      - ./mysql/config/mysql-prod.cnf:/etc/my.cnf
-      - ./mysql/datadir:/var/lib/mysql
-    networks:
-      - internal
-      - external
-  workspace-moodle:
     env_file:
-      - .env-dev-tongkolspace
-    ports: !reset []
+      - .env-dev-local
     networks:
       - internal
       - external
-  php-fpm:
-      env_file:
-      - .env-dev-tongkolspace
-networks:
-  internal:
-    name: ${APP_NAME}-${NETWORK}
-  external:
-    external: true
-    name: ${NETWORK}
+  redis:
+    volumes: !override
+      - ./redis/redis-prod.conf:/usr/local/etc/redis/redis.conf
+  db:
+    volumes: !override
+      - ./mysql/datadir:/var/lib/mysql
+      - ./mysql/config/mysql-prod.cnf:/etc/my.cnf

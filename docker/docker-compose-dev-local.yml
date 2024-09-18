@@ -1,115 +1,46 @@
 services:
-  php-fpm:
-    # sesuaikan php ini
-    image: tongkolspace/php-fpm-moodle:${IMAGE_MOODLE_VERSION}
-    container_name: php-fpm-moodle-${APP_NAME}
-    restart: unless-stopped
+  moodle:
+    image: app-moodle-${APP_NAME}:${APP_TAG} 
+    container_name: moodle-dev-local-${APP_NAME}
     build:
       context: ../
-      dockerfile: ./docker/php-fpm/Dockerfile
-      args:
-        - IMAGE_MOODLE_VERSION=${IMAGE_MOODLE_VERSION}
-    env_file:
-      - .env-dev-local
-    environment:
-      TZ: ${TZ}
-    volumes:
-      - ../moodle:/var/www/html
-      - ../moodledata:/var/www/moodledata
-      - ../moodle_mod:/var/www/moodle_mod
-      - ./php-fpm/php-dev.ini:/usr/local/etc/php/conf.d/zz-custom-php.ini
-      - ./php-fpm/php-fpm-dev.conf:/usr/local/etc/php-fpm.d/easyengine.conf  
-    networks:
-      - internal
-      - external
-  nginx:
-    image: tongkolspace/nginx-ee:v1.0.2
-    container_name: nginx-moodle-${APP_NAME}
-    restart: unless-stopped
-    build:
-      context: ./nginx
       dockerfile: Dockerfile
-    volumes:
-      - ../admin:/var/www/admin
-      - ../moodle:/var/www/html
-      - ../moodledata:/var/www/moodledata
-      - ../moodle_mod:/var/www/moodle_mod
-      - ./nginx/sites-enabled/admin-dev.conf:/etc/nginx/sites-enabled/admin.conf
-      - ./nginx/sites-enabled/moodle.conf:/etc/nginx/sites-enabled/default
-      - ./nginx/log:/var/log/nginx
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
-      - ./nginx/common-extra:/etc/nginx/common-extra
-      - ./nginx/conf.d-extra:/etc/nginx/conf.d-extra
-      - ./nginx/conf.d/cloudflare.conf:/etc/nginx/conf.d/cloudflare.conf
-      - ./nginx/.htpasswd:/etc/nginx/.htpasswd
-      - ./nginx/tmp/nginx:/tmp/nginx
-    depends_on:
-      - redis
-    networks:
-      - internal
-      - external
     environment:
-      TZ: ${TZ}
+      - ROLE_BACKGROUND=true
+      - ROLE_NGINX=true
+      - ROLE_PHP_FPM=true
+    env_file:
+      - .env-dev-local
     ports:
-      - 80:80
+      - 80:8000
       - 57710:57710
-  redis:
-    image: redis:latest
-    container_name: redis-moodle-${APP_NAME}
-    restart: unless-stopped
-    volumes:
-      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
-    command: redis-server /usr/local/etc/redis/redis.conf
-    environment:
-      TZ: ${TZ}
-    networks:
-      - internal
-  workspace-moodle:
-    image: tongkolspace/workspace-moodle:${IMAGE_MOODLE_VERSION}
-    container_name: workspace-moodle-${APP_NAME}
-    build:
-      context: ../
-      dockerfile: ./docker/workspace/Dockerfile
-      args:
-        - IMAGE_MOODLE_VERSION=${IMAGE_MOODLE_VERSION}
-    volumes:
-      - ./php-fpm/php-dev.ini:/usr/local/etc/php/conf.d/zz-custom-php.ini
-      - ../moodle:/var/www/html
-      - ../moodledata:/var/www/moodledata
-      - ../moodle_mod:/var/www/moodle_mod
-    env_file:
-      - .env-dev-local
-    environment:
-      TZ: "${TZ}"
     networks:
       - internal
       - external
-    # ports:
-      # Bakend Laravel
-      # - 8000:8000
-      # - 5173:5173
-  supervisor:
-    image: tongkolspace/supervisor-moodle:${IMAGE_MOODLE_VERSION}
-    container_name: supervisor-moodle-${APP_NAME}
-    build:
-      context: ../
-      dockerfile: ./docker/supervisor/Dockerfile
-      args:
-        - IMAGE_MOODLE_VERSION=${IMAGE_MOODLE_VERSION}
-    volumes:
-      - ./php-fpm/php-dev.ini:/usr/local/etc/php/conf.d/zz-custom-php.ini
+    volumes: 
+      # Moodle
       - ../moodle:/var/www/html
-      - ../moodledata:/var/www/moodledata
       - ../moodle_mod:/var/www/moodle_mod
-      - ./supervisor/cron/cronjob-moodle:/tmp/cronjob
-      - ./supervisor/supervisor.conf/supervisor-cron.conf:/etc/supervisor/conf.d/supervisor-cron.conf
-    env_file:
-      - .env-dev-local
-    environment:
-      TZ: "${TZ}"
-    networks:
-      - internal
-      - external
+      - ../moodledata:/var/www/moodledata
+      # Nginx
+      - ./app/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./app/nginx/common:/etc/nginx/common
+      - ./app/nginx/conf.d:/etc/nginx/conf.d
+      - ./app/nginx/sites-available:/etc/nginx/sites-available
+      - ./app/nginx/sites-available/moodle.conf:/etc/nginx/sites-enabled/moodle.conf
+      - ./app/nginx/snippets:/etc/nginx/snippets
+      - ./app/nginx/empty:/etc/nginx/empty
+      # Admin Panel
+      - ../admin:/var/www/admin
+      - ./app/nginx/sites-available/admin.conf:/etc/nginx/sites-enabled/admin.conf
+      # PHP 
+      - ./app/php-fpm/php-fpm-dev.conf:/etc/php82/php-fpm.d/www.conf
+      - ./app/php-fpm/php-dev.ini:/etc/php82/conf.d/custom.ini
+      # supervisor & cron
+      - ./app/supervisor/conf.d:/home/app/supervisor/conf.d
+      - ./app/cron:/home/app/cron
+      # entrypoint
+      - ./app/entrypoint.sh:/usr/local/bin/entrypoint.sh
   db:
     image: mariadb:11.4.2
     container_name: db-moodle-${APP_NAME}
@@ -143,6 +74,17 @@ services:
       PMA_ABSOLUTE_URI: "http://${DOMAIN_MOODLE}/pma/"
     links:
       - db:db
+    networks:
+      - internal
+  redis:
+    image: redis:latest
+    container_name: redis-moodle-${APP_NAME}
+    restart: unless-stopped
+    volumes:
+      - ./redis/redis-dev.conf:/usr/local/etc/redis/redis.conf
+    command: redis-server /usr/local/etc/redis/redis.conf
+    environment:
+      TZ: ${TZ}
     networks:
       - internal
   redis-commander:

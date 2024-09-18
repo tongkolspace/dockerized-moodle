@@ -15,12 +15,10 @@ $requestHost = getRequestHost();
 if (getenv('DB_TYPE')) {
     // runing on docker
     require "config-docker.php";
-} elseif ($requestHost === 'lmsspada.kemdikbud.go.id') {
-    // Konfigurasi untuk lmsspada.kemdikbud.go.id
-    require "config-lmsspada.php";
-} elseif ($requestHost === 'dummy-lmmspada.kemdikbud.go.id') {
-    // Konfigurasi untuk dummy-lmmspada.kemdikbud.go.id
-    require "config-dummy-lmsspada.php";
+} elseif ($requestHost === 'domain.com') {
+    require "config-domain.php";
+} elseif ($requestHost === 'domain-2.com') {
+    require "domain-domain-2.php";
 } else {
     // Default configuration
     require "config-standard.php";
