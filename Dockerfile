@@ -95,7 +95,7 @@ RUN chmod -R 444 /var/www/html && \
     chmod -R u=r,go=r,a+X /var/www/html 
 
 COPY --chown=app ./docker/app/entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN chown -R app:app /run /var/lib/nginx /var/log/nginx /etc/nginx
+RUN chown -R app:app /run /var/lib/nginx /var/log /etc/nginx
 USER app
 # Expose ports
 EXPOSE 8000 57710
