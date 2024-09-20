@@ -7,13 +7,16 @@ moodle_mod="moodle_mod"
 moodle="moodle"
 
 # Daftar target
-targets=(
+targets_symlink=(
     "admin/cli/delete_backup.php"
-    "theme/moove"
     "local/restrictrestore"
     "config.php"
     "config-docker.php"
     "config-standard.php"
+)
+
+target_cp=(
+    "theme/moove"
 )
 
 # Fungsi untuk menjalankan atau hanya menampilkan perintah
@@ -45,8 +48,13 @@ done
 
 # Menampilkan informasi tentang file yang akan diganti
 echo "Skrip ini akan mengganti file di folder berikut:"
-for target in "${targets[@]}"; do
-    echo "./$moodle_mod/$target --> ./$moodle/$target"
+echo "Symlink:"
+for target in "${targets_symlink[@]}"; do
+    echo "./$moodle_mod/$target --> ./$moodle/$target (symlink)"
+done
+echo "Copy:"
+for target in "${targets_cp[@]}"; do
+    echo "./$moodle_mod/$target --> ./$moodle/$target (copy)"
 done
 
 # Konfirmasi untuk melanjutkan jika bukan dry run dan bukan force
@@ -59,7 +67,7 @@ if [ "$dry_run" = false ] && [ "$force" = false ]; then
 fi
 
 # Hitung panjang teks
-text="Menjalankan symlink script dari folder $current_dir/$moodle"
+text="Menjalankan symlink dan copy script dari folder $current_dir/$moodle"
 text_length=${#text}
 
 # Buat garis pemisah dengan panjang yang sama
@@ -71,13 +79,20 @@ echo "$text"
 echo "$separator"
 echo ""
 
-# Proses penggantian file
-for target in "${targets[@]}"; do
+# Proses penggantian file dengan symlink
+for target in "${targets_symlink[@]}"; do
     # Hapus target yang ada
     run_command "rm -rf $moodle/$target"
     relative_path=$(realpath --relative-to="$moodle/$(dirname $target)" "$moodle_mod/$target")
     # Buat symlink dengan path relatif
     run_command "ln -s $relative_path $moodle/$target"
+done
+
+# Proses penggantian file dengan copy
+for target in "${targets_cp[@]}"; do
+    # Hapus target yang ada
+    run_command "rm -rf $moodle/$target"
+    run_command "cp -r $moodle_mod/$target $moodle/$target"
 done
 
 cd $current_dir
