@@ -15,7 +15,7 @@ targets_symlink=(
     "config-standard.php"
 )
 
-target_cp=(
+targets_cp=(
     "theme/moove"
 )
 
