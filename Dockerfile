@@ -87,12 +87,12 @@ COPY --chown=app ./docker/app/cron /home/app/cron
 
 
 # Web Apps
-COPY --chown=app ./moodle /var/www/html/
-COPY --chown=app ./moodle_mod /var/www/moodle_mod/
-COPY --chown=app ./admin /var/www/admin/
+COPY --chown=app --chmod=444 ./moodle /var/www/html/
+COPY --chown=app --chmod=444 ./moodle_mod /var/www/moodle_mod/
+COPY --chown=app --chmod=444 ./admin /var/www/admin/
 
-RUN chmod -R 444 /var/www/html && \
-    chmod -R u=r,go=r,a+X /var/www/html 
+# If need to modify specific folder
+# RUN chmod 755 /var/www/moodledata
 
 COPY --chown=app ./docker/app/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
