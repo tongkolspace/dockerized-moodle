@@ -87,9 +87,9 @@ COPY --chown=app ./docker/app/cron /home/app/cron
 
 
 # Web Apps
-COPY --chown=app --chmod=444 ./moodle /var/www/html/
-COPY --chown=app --chmod=444 ./moodle_mod /var/www/moodle_mod/
-COPY --chown=app --chmod=444 ./admin /var/www/admin/
+COPY --chown=app --chmod=554 ./moodle /var/www/html/
+COPY --chown=app --chmod=554 ./moodle_mod /var/www/moodle_mod/
+COPY --chown=app --chmod=554 ./admin /var/www/admin/
 
 # If need to modify specific folder
 # RUN chmod 755 /var/www/moodledata
